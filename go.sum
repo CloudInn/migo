@@ -1,5 +1,5 @@
-github.com/CloudInn/gormigrate/v2 v2.1.0 h1:sDDG6/rcQBwYPVYxUSrIStz1QMf+zpf+vTq6DTvZVns=
-github.com/CloudInn/gormigrate/v2 v2.1.0/go.mod h1:fCpJ1wRm8e3+PpKIXQUhw7EsmM5CS9gokPssF8QrlDo=
+github.com/CloudInn/gormigrate/v2 v2.2.0 h1:te3sRHt/1CwmUSZxqTX0bsgWUwrzTLqkgoBOmDssmk4=
+github.com/CloudInn/gormigrate/v2 v2.2.0/go.mod h1:hp2ERUOyqUdviuGFQmJJpbOnY8dqBOYu8AzZUHdvE+Q=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/denisenkom/go-mssqldb v0.12.0 h1:VtrkII767ttSPNRfFekePK3sctr+joXgO58stqQbtUA=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
