@@ -8,7 +8,7 @@ import (
 	"time"
 	"flag"
 
-	"github.com/go-gormigrate/gormigrate/v2"
+	"github.com/CloudInn/gormigrate/v2"
 	"gorm.io/gorm"
 )
 
