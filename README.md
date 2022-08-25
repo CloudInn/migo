@@ -13,6 +13,13 @@ import (
 	"gorm.io/gorm"
 )
 
+var migrateFlag *bool
+
+func init() {
+	migrateFlag = flag.Bool("migrate", false, "run the migration.")
+}
+
+
 func main() {
 	db, _ := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 
@@ -63,7 +70,14 @@ func main() {
 			},
 		},
 	}
-	migo.Run(db, migrations)
+
+	flag.Parse()
+	if *migrateFlag {
+		err := migo.Run(db, migrations)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
 }
 
 ```
