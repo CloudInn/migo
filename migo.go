@@ -4,11 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"time"
-	"flag"
 
 	"github.com/CloudInn/gormigrate/v2"
+	"github.com/fatih/color"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +25,23 @@ type gormMigration struct {
 	IsApplied bool
 }
 
+var DefaultOptions *Options = &Options{
+	Options: *gormigrate.DefaultOptions,
+}
+
+type Options struct {
+	gormigrate.Options
+	PgSchema string
+}
+
+func (o Options) WithPgSchema(pgschema string) *Options {
+	d := DefaultOptions
+	d.PgSchema = pgschema
+	return d
+}
+
 var dbClient *gorm.DB
+var schemaname     string
 
 var (
 	errNoGormGooseMigrationTable error = errors.New("no gorm goose table found")
@@ -34,31 +49,8 @@ var (
 	errNoUnAppliedMigrations     error = errors.New("no un-applied gorm-goose migrations")
 )
 
-var (
-	schemanameFlag *string
-	schemaname     string
-)
-
-func init() {
-	schemanameFlag = flag.String("pgschema", "", "which postgres-schema to migrate (this will be the pg-schema if SCHEMA_NAME env not set)")
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stdout, "https://github.com/CloudInn/migo\n")
-	}
-}
-
-func Run(db *gorm.DB, migrations Migrations) error {
-
-	if len(flag.Args()) < 1 {
-		fmt.Println("Not enough arguments")
-		os.Exit(1)
-	}
-
-	// to generate current timestamp to use it as migration id
-	if flag.Args()[0] == "gen" {
-		fmt.Println(time.Now().Format("20060102150405"))
-		os.Exit(0)
-		return nil
-	}
+func Run(db *gorm.DB, migrations Migrations, command string, options Options) error {
+	schemaname = options.PgSchema
 
 	if db != nil {
 		dbClient = db
@@ -66,20 +58,10 @@ func Run(db *gorm.DB, migrations Migrations) error {
 		log.Fatalln("dbClient is nil")
 	}
 
-	schemanameEnv := os.Getenv("SCHEMA_NAME")
-	if *schemanameFlag != "" {
-		schemaname = *schemanameFlag
-	} else if schemanameEnv != "" {
-		schemaname = schemanameEnv
-	} else {
-		return errors.New("no -pgschema flag found or SCHEMA_NAME env")
-	}
+	options.TableName = fmt.Sprintf("%s.%s", options.PgSchema, options.TableName)
+	m := gormigrate.New(db, &options.Options, migrations)
 
-	migrateOptions := gormigrate.DefaultOptions
-	migrateOptions.TableName = fmt.Sprintf("%s.%s", schemaname, gormigrate.DefaultOptions.TableName)
-	m := gormigrate.New(db, migrateOptions, migrations)
-
-	switch flag.Args()[0] {
+	switch command {
 	case "up":
 		ggd, err := getGormGooseData()
 		if err != nil {
@@ -115,9 +97,14 @@ func Run(db *gorm.DB, migrations Migrations) error {
 		return errors.New("invalid -migrate subcommand (should be neither up, down or gen)")
 	}
 
-	log.Printf("Migration did run")
+	color.Green("\n** Migration run successfully **")
 	return nil
 }
+
+func NewID() string {
+	return time.Now().Format("20060102150405")
+}
+
 
 func getGormGooseData() (gormGooseData, error) {
 	ggd := gormGooseData{}
