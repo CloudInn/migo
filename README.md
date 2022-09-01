@@ -13,12 +13,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var migrateFlag *bool
-
-func init() {
-	migrateFlag = flag.Bool("migrate", false, "run the migration.")
-}
-
 
 func main() {
 	db, _ := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
@@ -71,38 +65,11 @@ func main() {
 		},
 	}
 
-	flag.Parse()
-	if *migrateFlag {
-		err := migo.Run(db, migrations)
-		if err != nil {
-			log.Fatalln(err)
-		}
+	err := migo.Run(dbClient, migrations, "up", *migo.DefaultOptions.WithPgSchema("<YOUR PGSCHEMA>"))
+	if err != nil {
+		log.Fatalln(err)
 	}
+
 }
 
-```
-# Usage
-
-## up
-
-Apply all available migrations.
-```sh
-    $ go run main.go -migrate -pgschema=my_schema_name up
-    $ 2022/08/25 02:07:27 Migration ran
-```
-
-## down
-
-Roll back a single migration from the current version.
-```sh
-    $ go run main.go -migrate -pgschema=my_schema_name down
-    $ 2022/08/25 02:07:27 Migration ran
-```
-
-## gen
-
-Generates the current timestamp, you can copy it to use it as an ID to you new migration
-```sh
-    $ go run main.go -migrate gen
-    $ 20220825031134
 ```
