@@ -49,7 +49,7 @@ var (
 	errNoUnAppliedMigrations     error = errors.New("no un-applied gorm-goose migrations")
 )
 
-func Run(db *gorm.DB, migrations Migrations, command string, options Options) error {
+func Run(db *gorm.DB, migrations Migrations, command string, options *Options) error {
 	schemaname = options.PgSchema
 
 	if db != nil {
