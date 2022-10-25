@@ -15,7 +15,6 @@ type Migrations []*gormigrate.Migration
 
 type gormGooseData struct {
 	lastAppliedMigrationID    string
-	firstUnAppliedMigrationID string
 }
 
 type gormMigration struct {
@@ -46,7 +45,6 @@ var schemaname string
 var (
 	errNoGormGooseMigrationTable error = errors.New("no gorm goose table found")
 	errNoAppliedMigrations       error = errors.New("no applied gorm-goose migrations")
-	errNoUnAppliedMigrations     error = errors.New("no un-applied gorm-goose migrations")
 )
 
 func Run(db *gorm.DB, migrations Migrations, command string, options *Options) error {
@@ -72,10 +70,6 @@ func Run(db *gorm.DB, migrations Migrations, command string, options *Options) e
 				}
 			case errNoAppliedMigrations:
 				if err := m.Migrate(); err != nil {
-					log.Fatalf("Could not migrate: %v", err)
-				}
-			case errNoUnAppliedMigrations:
-				if err := m.FakeMigrate(); err != nil {
 					log.Fatalf("Could not migrate: %v", err)
 				}
 			default:
@@ -118,10 +112,6 @@ func getGormGooseData() (gormGooseData, error) {
 		return gormGooseData{}, err
 	}
 
-	ggd.firstUnAppliedMigrationID, err = getFirstGormGooseUnAppliedMigration()
-	if err != nil {
-		return gormGooseData{}, err
-	}
 	return ggd, err
 }
 
@@ -137,19 +127,6 @@ func getLastGormGooseAppliedMigration() (string, error) {
 	result := dbClient.Raw(fmt.Sprintf("SELECT * FROM %s.migration_records WHERE id IN (SELECT MAX(id) FROM %s.migration_records GROUP BY version_id) AND is_applied = TRUE ORDER BY version_id DESC LIMIT 1;", schemaname, schemaname)).Scan(&gm)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) || result.RowsAffected == 0 {
 		return "", errNoAppliedMigrations
-	}
-	if result.Error != nil {
-		return "", result.Error
-	}
-	return fmt.Sprint(gm.VersionID), result.Error
-}
-
-func getFirstGormGooseUnAppliedMigration() (string, error) {
-	gm := gormMigration{}
-
-	result := dbClient.Raw(fmt.Sprintf("SELECT * FROM %s.migration_records WHERE id IN (SELECT MAX(id) FROM %s.migration_records GROUP BY version_id) AND is_applied = FALSE ORDER BY version_id LIMIT 1;", schemaname, schemaname)).Scan(&gm)
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) || result.RowsAffected == 0 {
-		return "", errNoUnAppliedMigrations
 	}
 	if result.Error != nil {
 		return "", result.Error
