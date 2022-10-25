@@ -41,7 +41,7 @@ func (o Options) WithPgSchema(pgschema string) *Options {
 }
 
 var dbClient *gorm.DB
-var schemaname     string
+var schemaname string
 
 var (
 	errNoGormGooseMigrationTable error = errors.New("no gorm goose table found")
@@ -105,7 +105,6 @@ func NewID() string {
 	return time.Now().Format("20060102150405")
 }
 
-
 func getGormGooseData() (gormGooseData, error) {
 	ggd := gormGooseData{}
 	var err error
@@ -135,7 +134,7 @@ func gormGooseMigrationTableExist() bool {
 func getLastGormGooseAppliedMigration() (string, error) {
 	gm := gormMigration{}
 
-	result := dbClient.Raw("SELECT * FROM etainvoicing.migration_records WHERE id IN (SELECT MAX(id) FROM etainvoicing.migration_records GROUP BY version_id) AND is_applied = TRUE ORDER BY version_id DESC LIMIT 1;").Scan(&gm)
+	result := dbClient.Raw(fmt.Sprintf("SELECT * FROM %s.migration_records WHERE id IN (SELECT MAX(id) FROM %s.migration_records GROUP BY version_id) AND is_applied = TRUE ORDER BY version_id DESC LIMIT 1;", schemaname, schemaname)).Scan(&gm)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) || result.RowsAffected == 0 {
 		return "", errNoAppliedMigrations
 	}
@@ -148,7 +147,7 @@ func getLastGormGooseAppliedMigration() (string, error) {
 func getFirstGormGooseUnAppliedMigration() (string, error) {
 	gm := gormMigration{}
 
-	result := dbClient.Raw("SELECT * FROM etainvoicing.migration_records WHERE id IN (SELECT MAX(id) FROM etainvoicing.migration_records GROUP BY version_id) AND is_applied = FALSE ORDER BY version_id LIMIT 1;").Scan(&gm)
+	result := dbClient.Raw(fmt.Sprintf("SELECT * FROM %s.migration_records WHERE id IN (SELECT MAX(id) FROM %s.migration_records GROUP BY version_id) AND is_applied = FALSE ORDER BY version_id LIMIT 1;", schemaname, schemaname)).Scan(&gm)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) || result.RowsAffected == 0 {
 		return "", errNoUnAppliedMigrations
 	}
