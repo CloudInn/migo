@@ -26,6 +26,7 @@ type gormMigration struct {
 
 var DefaultOptions *Options = &Options{
 	Options: *gormigrate.DefaultOptions,
+	PgSchema: "public",
 }
 
 type Options struct {
@@ -34,7 +35,7 @@ type Options struct {
 }
 
 func (o Options) WithPgSchema(pgschema string) *Options {
-	d := DefaultOptions
+	d := &o
 	d.PgSchema = pgschema
 	return d
 }
