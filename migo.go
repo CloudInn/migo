@@ -14,7 +14,7 @@ import (
 type Migrations []*gormigrate.Migration
 
 type gormGooseData struct {
-	lastAppliedMigrationID    string
+	lastAppliedMigrationID string
 }
 
 type gormMigration struct {
@@ -25,7 +25,13 @@ type gormMigration struct {
 }
 
 var DefaultOptions *Options = &Options{
-	Options: *gormigrate.DefaultOptions,
+	Options: gormigrate.Options{
+		TableName:                 gormigrate.DefaultOptions.TableName,
+		IDColumnName:              gormigrate.DefaultOptions.IDColumnName,
+		IDColumnSize:              gormigrate.DefaultOptions.IDColumnSize,
+		UseTransaction:            true,
+		ValidateUnknownMigrations: gormigrate.DefaultOptions.ValidateUnknownMigrations,
+	},
 }
 
 type Options struct {
